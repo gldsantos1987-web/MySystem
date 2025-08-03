@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+
+{% block title %}Atender Chamado - {{ call.title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4">
+    <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-3xl mx-auto">
+        <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Atender Chamado #{{ call.id }}</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div>
+                <p class="text-gray-700 text-sm font-bold">Título:</p>
+                <p class="text-gray-900 text-lg">{{ call.title }}</p>
+            </div>
+            <div>
+                <p class="text-gray-700 text-sm font-bold">Status:</p>
+                <p class="text-lg">
+                    <span class="px-3 py-1 rounded-full text-sm font-semibold
+                        {% if call.status == 'Aberto' %}bg-red-100 text-red-800
+                        {% elif call.status == 'Em Andamento' %}bg-yellow-100 text-yellow-800
+                        {% elif call.status == 'Concluído' %}bg-green-100 text-green-800
+                        {% elif call.status == 'Cancelado' %}bg-gray-100 text-gray-800
+                        {% endif %}">
+                        {{ call.status }}
+                    </span>
+                </p>
+            </div>
+            <div>
+                <p class="text-gray-700 text-sm font-bold">Solicitante:</p>
+                <p class="text-gray-900 text-lg">{{ call.user_name_opener }}</p>
+            </div>
+            <div>
+                <p class="text-gray-700 text-sm font-bold">Local:</p>
+                <p class="text-gray-900 text-lg">{{ call.location }}</p>
+            </div>
+            <div>
+                <p class="text-gray-700 text-sm font-bold">Categoria:</p>
+                <p class="text-gray-900 text-lg">{{ call.category }}</p>
+            </div>
+            <div>
+                <p class="text-gray-700 text-sm font-bold">Criado Em:</p>
+                <p class="text-gray-900 text-lg">{{ call.created_at }}</p>
+            </div>
+            {% if call.technician_id %}
+            <div>
+                <p class="text-gray-700 text-sm font-bold">Técnico Atribuído:</p>
+                <p class="text-gray-900 text-lg">{{ technician_name }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="mb-6">
+            <p class="text-gray-700 text-sm font-bold mb-2">Descrição:</p>
+            <div class="bg-gray-50 p-4 rounded-md border border-gray-200">
+                <p class="text-gray-800 whitespace-pre-wrap">{{ call.description }}</p>
+            </div>
+        </div>
+
+        <form action="{{ url_for('attend_call', call_id=call.id) }}" method="POST" enctype="multipart/form-data">
+            <div class="mb-6">
+                <label for="diagnosis" class="block text-gray-700 text-sm font-bold mb-2">Diagnóstico:</label>
+                <textarea id="diagnosis" name="diagnosis" rows="5" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Descreva o diagnóstico do problema..." {% if call.status == 'Concluído' or call.status == 'Cancelado' %}readonly{% endif %}>{{ call.diagnosis if call.diagnosis else '' }}</textarea>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Materiais Utilizados:</label>
+                <div id="materials-container" class="space-y-2 mb-4">
+                    {% if call.materials %}
+                        {% set materials_list = json_loads(call.materials) %}
+                        {% for material in materials_list %}
+                            <div class="material-entry flex items-center space-x-2">
+                                <input type="text" value="{{ material.name }}" class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline flex-1" placeholder="Nome do Material" readonly>
+                                <input type="number" value="{{ material.quantity }}" class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline w-24" placeholder="Qtd" min="1" readonly>
+                                <input type="text" value="{{ material.unit }}" class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline w-24" placeholder="Unidade" readonly>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                {% if call.status != 'Concluído' and call.status != 'Cancelado' %}
+                <button type="button" id="add-material-btn" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+                    Adicionar Material
+                </button>
+                {% endif %}
+                <input type="hidden" name="materials_used" id="materials-used-input">
+            </div>
+
+            <div class="mb-6">
+                <label for="conclusion" class="block text-gray-700 text-sm font-bold mb-2">Conclusão:</label>
+                <textarea id="conclusion" name="conclusion" rows="5" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Descreva a conclusão do serviço..." {% if call.status == 'Concluído' or call.status == 'Cancelado' %}readonly{% endif %}>{{ call.conclusion if call.conclusion else '' }}</textarea>
+            </div>
+
+            <div class="mb-6">
+                <label for="attachments" class="block text-gray-700 text-sm font-bold mb-2">Anexar Arquivos:</label>
+                <input type="file" id="attachments" name="attachments" multiple class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none">
+                <p class="mt-1 text-sm text-gray-500">PNG, JPG, JPEG, GIF, PDF, DOC, DOCX, TXT.</p>
+            </div>
+
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 mt-8">
+                {% if call.status == 'Aberto' %}
+                <button type="submit" name="action" value="start_attendance" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 w-full md:w-auto text-center">
+                    Iniciar Atendimento
+                </button>
+                {% endif %}
+
+                {% if call.status in ['Aberto', 'Em Andamento'] %}
+                <button type="submit" name="action" value="finish_call" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 w-full md:w-auto text-center">
+                    Finalizar Chamado
+                </button>
+                {% endif %}
+
+                <a href="{{ url_for('call_details', call_id=call.id) }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 w-full md:w-auto text-center">
+                    Voltar aos Detalhes
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const addMaterialBtn = document.getElementById('add-material-btn');
+        const materialsContainer = document.getElementById('materials-container');
+        const materialsUsedInput = document.getElementById('materials-used-input');
+        const stockItems = {{ stock_items | tojson | safe }}; // Passa os itens do estoque do Flask
+
+        // Função para adicionar uma nova entrada de material
+        function addMaterialEntry(name = '', quantity = '', unit = '') {
+            const materialEntry = document.createElement('div');
+            materialEntry.className = 'material-entry flex items-center space-x-2 mb-2';
+            materialEntry.innerHTML = `
+                <select class="material-name shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline flex-1">
+                    <option value="">-- Selecione o Material --</option>
+                    ${stockItems.map(item => `<option value="${item.name}" ${item.name === name ? 'selected' : ''}>${item.name} (${item.quantity} ${item.unit})</option>`).join('')}
+                </select>
+                <input type="number" class="material-quantity shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline w-24" placeholder="Qtd" min="1" value="${quantity}">
+                <input type="text" class="material-unit shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline w-24" placeholder="Unidade" value="${unit}" readonly>
+                <button type="button" class="remove-material-btn bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded-lg shadow-md transition duration-300">X</button>
+            `;
+            materialsContainer.appendChild(materialEntry);
+            
+            // Adiciona listener para o botão de remover
+            materialEntry.querySelector('.remove-material-btn').addEventListener('click', function() {
+                materialEntry.remove();
+                updateMaterialsUsedInput();
+            });
+
+            // Adiciona listener para o select de material para atualizar a unidade
+            materialEntry.querySelector('.material-name').addEventListener('change', function() {
+                const selectedMaterialName = this.value;
+                const selectedMaterial = stockItems.find(item => item.name === selectedMaterialName);
+                const unitInput = materialEntry.querySelector('.material-unit');
+                if (selectedMaterial) {
+                    unitInput.value = selectedMaterial.unit || '';
+                } else {
+                    unitInput.value = '';
+                }
+            });
+        }
+
+        // Função para atualizar o campo hidden com os materiais usados em formato JSON
+        function updateMaterialsUsedInput() {
+            const materialEntries = materialsContainer.querySelectorAll('.material-entry');
+            const materials = [];
+            materialEntries.forEach(entry => {
+                const name = entry.querySelector('.material-name').value;
+                const quantity = entry.querySelector('.material-quantity').value;
+                const unit = entry.querySelector('.material-unit').value;
+                if (name && quantity && parseInt(quantity) > 0) {
+                    materials.push({ name: name, quantity: parseInt(quantity), unit: unit });
+                }
+            });
+            materialsUsedInput.value = JSON.stringify(materials);
+        }
+
+        // Adiciona um material vazio quando a página carrega, se não houver materiais pré-existentes
+        if (materialsContainer.children.length === 0) {
+            addMaterialEntry();
+        } else {
+            // Se houver materiais pré-existentes (somente leitura), eles já estão no HTML.
+            // Precisamos adicionar os listeners de remoção para eles se forem editáveis.
+            // Para este caso, eles são somente leitura, então não há botões de remoção.
+            // No entanto, se o chamado não estiver concluído, os campos podem ser editados.
+            // Para garantir que o input hidden seja preenchido com os materiais existentes
+            updateMaterialsUsedInput();
+        }
+
+
+        // Listener para o botão "Adicionar Material"
+        if (addMaterialBtn) {
+            addMaterialBtn.addEventListener('click', function() {
+                addMaterialEntry();
+                updateMaterialsUsedInput(); // Atualiza o input hidden após adicionar um novo campo
+            });
+        }
+
+        // Atualiza o input hidden sempre que houver uma mudança nos campos de material
+        materialsContainer.addEventListener('change', function(event) {
+            if (event.target.classList.contains('material-name') || event.target.classList.contains('material-quantity')) {
+                updateMaterialsUsedInput();
+            }
+        });
+
+        // Adiciona o evento de submit ao formulário para garantir que o JSON seja enviado
+        document.querySelector('form').addEventListener('submit', function(event) {
+            // Antes de enviar, garante que o campo hidden está atualizado
+            updateMaterialsUsedInput();
+
+            const action = event.submitter.value;
+            const diagnosis = document.getElementById('diagnosis').value.trim();
+            const conclusion = document.getElementById('conclusion').value.trim();
+
+            if (action === 'finish_call') {
+                if (!diagnosis) {
+                    alert('Diagnóstico é obrigatório para finalizar o chamado.');
+                    event.preventDefault(); // Impede o envio do formulário
+                    return;
+                }
+                if (!conclusion) {
+                    alert('Conclusão é obrigatória para finalizar o chamado.');
+                    event.preventDefault(); // Impede o envio do formulário
+                    return;
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

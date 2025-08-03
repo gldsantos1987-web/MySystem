@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Relatório de Chamados por Categoria e Localização{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4">
+    <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Relatório de Chamados por Categoria e Localização</h2>
+
+    <div class="bg-white p-6 rounded-lg shadow-lg mb-8 max-w-4xl mx-auto">
+        <h3 class="text-xl font-semibold text-gray-700 mb-4 text-center">Chamados por Categoria</h3>
+        {% if calls_by_category %}
+        <div class="overflow-x-auto rounded-lg shadow-md mb-8">
+            <table class="min-w-full bg-white">
+                <thead class="bg-gray-200 text-gray-700 uppercase text-sm leading-normal">
+                    <tr>
+                        <th class="py-3 px-6 text-left">Categoria</th>
+                        <th class="py-3 px-6 text-left">Número de Chamados</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-600 text-sm font-light">
+                    {% for item in calls_by_category %}
+                    <tr class="border-b border-gray-200 hover:bg-gray-100">
+                        <td class="py-3 px-6 text-left whitespace-nowrap">{{ item.label }}</td>
+                        <td class="py-3 px-6 text-left">{{ item.value }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-center text-gray-500 mt-8 mb-8">Nenhum dado de chamados por categoria encontrado.</p>
+        {% endif %}
+
+        <h3 class="text-xl font-semibold text-gray-700 mb-4 text-center">Chamados por Localização</h3>
+        {% if calls_by_location %}
+        <div class="overflow-x-auto rounded-lg shadow-md">
+            <table class="min-w-full bg-white">
+                <thead class="bg-gray-200 text-gray-700 uppercase text-sm leading-normal">
+                    <tr>
+                        <th class="py-3 px-6 text-left">Localização</th>
+                        <th class="py-3 px-6 text-left">Número de Chamados</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-600 text-sm font-light">
+                    {% for item in calls_by_location %}
+                    <tr class="border-b border-gray-200 hover:bg-gray-100">
+                        <td class="py-3 px-6 text-left whitespace-nowrap">{{ item.label }}</td>
+                        <td class="py-3 px-6 text-left">{{ item.value }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-center text-gray-500 mt-8">Nenhum dado de chamados por localização encontrado.</p>
+        {% endif %}
+    </div>
+
+    {# Botão Voltar para Relatórios (inferior centralizado) #}
+    <div class="flex justify-center mt-8">
+        <a href="{{ url_for('admin_reports') }}" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+            Voltar para Relatórios
+        </a>
+    </div>
+</div>
+{% endblock %}

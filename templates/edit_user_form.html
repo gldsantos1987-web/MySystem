@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Usuário - {{ user.name }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4">
+    <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md mx-auto">
+        <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Editar Usuário: {{ user.name }}</h2>
+
+        <form action="{{ url_for('edit_user', user_id=user.id) }}" method="POST">
+            <div class="mb-4">
+                <label for="name" class="block text-gray-700 text-sm font-bold mb-2">Nome:</label>
+                <input type="text" id="name" name="name" value="{{ user.name }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+            </div>
+            <div class="mb-4">
+                <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Email:</label>
+                <input type="email" id="email" name="email" value="{{ user.email }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+            </div>
+            <div class="mb-4">
+                <label for="role" class="block text-gray-700 text-sm font-bold mb-2">Função:</label>
+                <select id="role" name="role" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                    <option value="USUARIO" {% if user.role == 'USUARIO' %}selected{% endif %}>Usuário</option>
+                    <option value="TECNICO" {% if user.role == 'TECNICO' %}selected{% endif %}>Técnico</option>
+                    {% if session.get('is_primary_admin', 0) == 1 %}
+                        <option value="ADMIN" {% if user.role == 'ADMIN' %}selected{% endif %}>Administrador</option>
+                    {% endif %}
+                </select>
+            </div>
+            <div class="mb-6">
+                <label for="new_password" class="block text-gray-700 text-sm font-bold mb-2">Nova Senha (deixe em branco para não alterar):</label>
+                <input type="password" id="new_password" name="new_password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="********">
+                <p class="text-xs text-gray-600 mt-1">Mínimo de 6 caracteres, se preenchido.</p>
+            </div>
+            <div class="flex items-center justify-between">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+                    Salvar Alterações
+                </button>
+                <a href="{{ url_for('user_details', user_id=user.id) }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

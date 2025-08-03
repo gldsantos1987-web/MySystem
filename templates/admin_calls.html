@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Todos os Chamados (Administrador){% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4">
+    <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Todos os Chamados (Administrador)</h2>
+
+    <div class="bg-white p-6 rounded-lg shadow-lg mb-8">
+        {# Botão para Abrir Chamado alinhado à direita #}
+        <div class="flex justify-end mb-6"> {# Alterado para justify-end #}
+            <a href="{{ url_for('new_call') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+                Abrir Chamado
+            </a>
+        </div>
+
+        {% if calls %}
+        <div class="overflow-x-auto rounded-lg shadow-md">
+            <table class="min-w-full bg-white">
+                <thead class="bg-gray-200 text-gray-700 uppercase text-sm leading-normal">
+                    <tr>
+                        <th class="py-3 px-6 text-left">ID</th>
+                        <th class="py-3 px-6 text-left">Título</th>
+                        <th class="py-3 px-6 text-left">Aberto Por</th>
+                        <th class="py-3 px-6 text-left">Localização</th>
+                        <th class="py-3 px-6 text-left">Categoria</th>
+                        <th class="py-3 px-6 text-left">Status</th>
+                        <th class="py-3 px-6 text-left">Técnico Atribuído</th>
+                        <th class="py-3 px-6 text-left">Criado Em</th>
+                        <th class="py-3 px-6 text-left">Concluído Em</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-600 text-sm font-light">
+                    {% for call in calls %}
+                    <tr class="border-b border-gray-200 hover:bg-gray-100 cursor-pointer"
+                        onclick="window.location.href='{{ url_for('call_details', call_id=call.id) }}'">
+                        <td class="py-3 px-6 text-left whitespace-nowrap">{{ call.id }}</td>
+                        <td class="py-3 px-6 text-left">{{ call.title }}</td>
+                        <td class="py-3 px-6 text-left">{{ call.user_name_opener }}</td>
+                        <td class="py-3 px-6 text-left">{{ call.location }}</td>
+                        <td class="py-3 px-6 text-left">{{ call.category }}</td>
+                        <td class="py-3 px-6 text-left">
+                            <span class="px-2 py-1 rounded-full text-xs font-semibold
+                                {% if call.status == 'Aberto' %}bg-red-200 text-red-800
+                                {% elif call.status == 'Em Andamento' %}bg-yellow-200 text-yellow-800
+                                {% elif call.status == 'Concluído' %}bg-green-200 text-green-800
+                                {% elif call.status == 'Cancelado' %}bg-gray-200 text-gray-800
+                                {% endif %}">
+                                {{ call.status }}
+                            </span>
+                        </td>
+                        <td class="py-3 px-6 text-left">{{ call.technician_name_assigned if call.technician_name_assigned else 'N/A' }}</td>
+                        <td class="py-3 px-6 text-left">{{ call.created_at }}</td>
+                        <td class="py-3 px-6 text-left">{{ call.finished_at if call.finished_at else 'N/A' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {# Paginação #}
+        <div class="flex justify-center mt-6 space-x-2">
+            {% if page > 1 %}
+                <a href="{{ url_for('admin_calls', page=page-1) }}" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition duration-200">Anterior</a>
+            {% endif %}
+            {% for p in range(1, total_pages + 1) %}
+                <a href="{{ url_for('admin_calls', page=p) }}" class="px-4 py-2 rounded-lg {% if p == page %}bg-blue-600 text-white{% else %}bg-gray-300 text-gray-800 hover:bg-gray-400{% endif %} transition duration-200">{{ p }}</a>
+            {% endfor %}
+            {% if page < total_pages %}
+                <a href="{{ url_for('admin_calls', page=page+1) }}" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition duration-300">Próxima</a>
+            {% endif %}
+        </div>
+        {% else %}
+        <p class="text-center text-gray-500 mt-8">Nenhum chamado encontrado.</p>
+        {% endif %}
+    </div>
+
+    {# Botão Voltar para Dashboard #}
+    <div class="flex justify-center mt-8">
+        <a href="{{ url_for('dashboard') }}" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+            Voltar para Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

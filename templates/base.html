@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sistema de Chamados{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f6; /* Um cinza claro suave */
+        }
+        .flash-messages-container {
+            position: fixed; /* Fixa a posição na tela */
+            top: 70px; /* Abaixo da navbar */
+            left: 50%; /* Centraliza horizontalmente */
+            transform: translateX(-50%); /* Ajusta para centralizar perfeitamente */
+            width: 90%; /* Largura máxima */
+            max-width: 600px; /* Limita a largura para não ocupar a tela inteira */
+            z-index: 1050; /* Garante que fique acima de outros elementos */
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem; /* Espaço entre as mensagens */
+        }
+        .flash-message {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 500;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Adiciona uma sombra suave */
+        }
+        .flash-message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .flash-message.danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .flash-message.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        .flash-message.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .flash-message .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: inherit;
+            margin-left: 1rem;
+        }
+        /* Estilos para o dropdown do perfil */
+        .profile-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .profile-dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 200px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1000; /* Garante que fique acima de outros elementos */
+            right: 0; /* Alinha o dropdown à direita do botão */
+            border-radius: 0.5rem;
+            overflow: hidden; /* Garante que os itens arredondados se encaixem */
+        }
+
+        .profile-dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            font-size: 0.9rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .profile-dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .profile-dropdown:hover .profile-dropdown-content {
+            display: block;
+        }
+        /* Estilos para a bolha de notificação */
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ef4444; /* red-500 */
+            color: white;
+            border-radius: 9999px; /* fully rounded */
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+            line-height: 1;
+            min-width: 1.5rem; /* Garante um tamanho mínimo */
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .notification-panel {
+            position: absolute;
+            top: 60px; /* Ajuste conforme a altura da sua navbar */
+            right: 10px;
+            width: 350px;
+            max-height: 400px;
+            overflow-y: auto;
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: none; /* Escondido por padrão */
+        }
+        .notification-item {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .notification-item:hover {
+            background-color: #f9f9f9;
+        }
+        .notification-item.unread {
+            background-color: #e0f2fe; /* light blue for unread */
+            font-weight: 600;
+        }
+        .notification-item .timestamp {
+            font-size: 0.75rem;
+            color: #6b7280; /* gray-500 */
+        }
+        .notification-panel .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #eee;
+            background-color: #f4f7f6;
+        }
+        .notification-panel .footer {
+            padding: 0.75rem 1rem;
+            border-top: 1px solid #eee;
+            text-align: center;
+            background-color: #f4f7f6;
+        }
+        .notification-panel .empty-state {
+            padding: 1rem;
+            text-align: center;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <nav class="bg-blue-700 p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="{{ url_for('dashboard') }}" class="text-white text-2xl font-bold rounded-lg px-3 py-1 hover:bg-blue-600 transition duration-300">Sistema de Chamados</a>
+            
+            <div class="flex items-center space-x-4">
+                {# Verifica se o usuário está logado para mostrar o sino de notificações e o menu de perfil #}
+                {% if session.get('user_id') %}
+                <div class="relative">
+                    <button id="notification-bell" class="text-white focus:outline-none relative">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"></path></svg>
+                        <span id="notification-badge" class="notification-badge hidden">0</span>
+                    </button>
+                    <div id="notification-panel" class="notification-panel">
+                        <div class="header">
+                            <h4 class="font-semibold text-gray-800">Notificações</h4>
+                            <button id="mark-all-read-btn" class="text-blue-600 hover:text-blue-800 text-sm">Marcar todas como lidas</button>
+                        </div>
+                        <div id="notification-list">
+                            {# Notificações serão carregadas aqui via JavaScript #}
+                            <p class="empty-state">Carregando notificações...</p>
+                        </div>
+                        <div class="footer">
+                            <a href="#" class="text-blue-600 hover:text-blue-800 text-sm">Ver todas</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-dropdown">
+                    <button class="flex items-center text-white focus:outline-none bg-blue-600 hover:bg-blue-800 rounded-lg px-3 py-2 transition duration-300">
+                        {# Exibe a imagem de perfil se existir, caso contrário, a primeira letra do nome #}
+                        {% if session.get('profile_image') %}
+                            <img src="{{ session['profile_image'] }}" alt="Perfil" class="w-8 h-8 rounded-full mr-2 object-cover">
+                        {% else %}
+                            <div class="w-8 h-8 rounded-full bg-blue-800 flex items-center justify-center text-white font-semibold mr-2">
+                                {{ session['user_name'][0]|upper }}
+                            </div>
+                        {% endif %}
+                        {{ session['user_name'] }}
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="profile-dropdown-content">
+                        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+                        {# Opções específicas para ADMIN #}
+                        {% if session.get('user_role') == 'ADMIN' %}
+                            <a href="{{ url_for('register_user') }}">Registrar Usuário</a>
+                            <a href="{{ url_for('manage_users') }}">Gerenciar Usuários</a>
+                            <a href="{{ url_for('manage_stock') }}">Gerenciar Estoque</a>
+                            <a href="{{ url_for('admin_calls') }}">Ver Todos os Chamados (Admin)</a>
+                            <div class="border-t border-gray-200 my-1"></div>
+                            <span class="block px-4 py-2 text-xs text-gray-400">Relatórios:</span>
+                            <a href="{{ url_for('technician_performance_report') }}">Desempenho Técnico</a>
+                            <a href="{{ url_for('material_usage_report') }}">Uso de Materiais</a>
+                            <a href="{{ url_for('calls_by_breakdown_report') }}">Chamados por Categoria/Local</a>
+                        {% endif %}
+                        {# Opções específicas para USUARIO #}
+                        {% if session.get('user_role') == 'USUARIO' %}
+                            <a href="{{ url_for('new_call') }}">Abrir Novo Chamado</a>
+                            <a href="{{ url_for('view_all_calls') }}">Meus Chamados</a>
+                        {% endif %}
+                        {# Opções específicas para TECNICO #}
+                        {% if session.get('user_role') == 'TECNICO' %}
+                            <a href="{{ url_for('filtered_calls', status_filter='abertos') }}">Chamados Abertos</a>
+                            <a href="{{ url_for('filtered_calls', status_filter='em_atendimento') }}">Chamados em Atendimento</a>
+                            <a href="{{ url_for('filtered_calls', status_filter='finalizados') }}">Chamados Finalizados</a>
+                            <a href="{{ url_for('filtered_calls', status_filter='todos') }}">Todos os Chamados</a>
+                        {% endif %}
+                        <div class="border-t border-gray-200 my-1"></div>
+                        <a href="{{ url_for('edit_profile') }}">Editar Perfil</a>
+                        <a href="{{ url_for('logout') }}" class="text-red-500 hover:text-red-700">Sair</a>
+                    </div>
+                </div>
+                {% else %}
+                {# Se não estiver logado, e a página atual NÃO for a de login, mostra o botão de Login #}
+                {% if request.endpoint != 'login' %}
+                    <a href="{{ url_for('login') }}" class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">Login</a>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="flash-messages-container">
+        {# Flash messages #}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">
+                        <span>{{ message }}</span>
+                        <button type="button" class="close-btn" aria-label="Fechar">&times;</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <main class="py-6">
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Lógica para fechar mensagens flash automaticamente e manualmente
+            const flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(messageDiv => {
+                // Fechar automaticamente após 5 segundos
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 5000); // 5000ms = 5 segundos
+
+                // Fechar manualmente ao clicar no botão 'X'
+                const closeButton = messageDiv.querySelector('.close-btn');
+                if (closeButton) {
+                    closeButton.addEventListener('click', () => {
+                        messageDiv.style.display = 'none';
+                    });
+                }
+            });
+
+            // Lógica para o painel de notificações (apenas se o sino existir)
+            const notificationBell = document.getElementById('notification-bell');
+            const notificationPanel = document.getElementById('notification-panel');
+            const notificationBadge = document.getElementById('notification-badge');
+            const notificationList = document.getElementById('notification-list');
+            const markAllReadBtn = document.getElementById('mark-all-read-btn');
+
+            if (notificationBell) {
+                notificationBell.addEventListener('click', function(event) {
+                    event.stopPropagation(); // Impede que o clique se propague para o document
+                    notificationPanel.style.display = notificationPanel.style.display === 'block' ? 'none' : 'block';
+                    if (notificationPanel.style.display === 'block') {
+                        fetchNotifications();
+                    }
+                });
+
+                document.addEventListener('click', function(event) {
+                    if (notificationPanel.style.display === 'block' && !notificationPanel.contains(event.target) && event.target !== notificationBell) {
+                        notificationPanel.style.display = 'none';
+                    }
+                });
+
+                if (markAllReadBtn) { // Verifica se o botão existe antes de adicionar o listener
+                    markAllReadBtn.addEventListener('click', async function() {
+                        try {
+                            const response = await fetch("{{ url_for('mark_all_notifications_read') }}", {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                            const data = await response.json();
+                            if (data.success) {
+                                fetchNotifications(); // Recarrega as notificações
+                            } else {
+                                console.error('Erro ao marcar todas as notificações como lidas:', data.error);
+                            }
+                        } catch (error) {
+                            console.error('Erro de rede ao marcar todas as notificações como lidas:', error);
+                        }
+                    });
+                }
+
+                async function fetchNotifications() {
+                    notificationList.innerHTML = '<p class="empty-state">Carregando notificações...</p>';
+                    try {
+                        const response = await fetch("{{ url_for('get_notifications') }}");
+                        const data = await response.json();
+                        
+                        if (data.error) {
+                            notificationList.innerHTML = `<p class="empty-state text-red-500">Erro ao carregar: ${data.error}</p>`;
+                            notificationBadge.classList.add('hidden');
+                            return;
+                        }
+
+                        const notifications = data.notifications;
+                        const unreadCount = data.unread_count;
+
+                        if (unreadCount > 0) {
+                            notificationBadge.textContent = unreadCount;
+                            notificationBadge.classList.remove('hidden');
+                        } else {
+                            notificationBadge.classList.add('hidden');
+                        }
+
+                        notificationList.innerHTML = ''; // Limpa antes de adicionar
+
+                        if (notifications.length === 0) {
+                            notificationList.innerHTML = '<p class="empty-state">Nenhuma notificação.</p>';
+                        } else {
+                            notifications.forEach(n => {
+                                const item = document.createElement('div');
+                                item.classList.add('notification-item');
+                                if (!n.is_read) {
+                                    item.classList.add('unread');
+                                }
+
+                                // Calcula o tempo relativo
+                                // Certifique-se de que 'created_at' está no formato ISO 8601 ou adicione 'Z' para UTC
+                                const notificationTime = new Date(n.created_at); 
+                                if (isNaN(notificationTime.getTime())) { // Fallback para formato sem 'Z' se a análise falhar
+                                    const parts = n.created_at.split(/[- :]/);
+                                    notificationTime = new Date(parts[0], parts[1]-1, parts[2], parts[3], parts[4], parts[5]);
+                                }
+
+                                const now = new Date();
+                                const diffSeconds = Math.floor((now - notificationTime) / 1000);
+
+                                let relativeTime;
+                                if (diffSeconds < 60) {
+                                    relativeTime = `${diffSeconds} segundos atrás`;
+                                } else if (diffSeconds < 3600) {
+                                    relativeTime = `${Math.floor(diffSeconds / 60)} minutos atrás`;
+                                } else if (diffSeconds < 86400) {
+                                    relativeTime = `${Math.floor(diffSeconds / 3600)} horas atrás`;
+                                } else {
+                                    relativeTime = `${Math.floor(diffSeconds / 86400)} dias atrás`;
+                                }
+
+                                item.innerHTML = `
+                                    <p class="text-sm text-gray-900">${n.message}</p>
+                                    <p class="timestamp">${relativeTime}</p>
+                                `;
+                                item.addEventListener('click', async () => {
+                                    if (!n.is_read) {
+                                        await markNotificationAsRead(n.id);
+                                    }
+                                    if (n.link) {
+                                        window.location.href = n.link;
+                                    }
+                                    notificationPanel.style.display = 'none'; // Fecha o painel após o clique
+                                });
+                                notificationList.appendChild(item);
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Erro ao buscar notificações:', error);
+                        notificationList.innerHTML = '<p class="empty-state text-red-500">Erro ao carregar notificações.</p>';
+                        notificationBadge.classList.add('hidden');
+                    }
+                }
+
+                async function markNotificationAsRead(notificationId) {
+                    try {
+                        const response = await fetch(`/mark_notification_read/${notificationId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            fetchNotifications(); // Recarrega para atualizar a contagem e o status visual
+                        } else {
+                            console.error('Erro ao marcar notificação como lida:', data.error);
+                        }
+                    } catch (error) {
+                        console.error('Erro de rede ao marcar notificação como lida:', error);
+                    }
+                }
+
+                // Carrega notificações ao carregar a página (se logado)
+                fetchNotifications();
+                // Opcional: Recarregar notificações a cada X segundos para atualizações em tempo real
+                // setInterval(fetchNotifications, 60000); // A cada 60 segundos
+            }
+        });
+    </script>
+</body>
+</html>

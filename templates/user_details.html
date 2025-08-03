@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalhes do Usuário - {{ user.name }}{% endblock %}
+
+{% block content %}
+<style>
+    /* Estilos para o container principal dos botões de ação */
+    .action-button-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-top: 1.5rem; /* mt-6 do Tailwind */
+    }
+
+    /* Estilos para o botão em si (círculo que expande) */
+    .action-button {
+        display: flex;
+        align-items: center;
+        
+        width: 40px; /* Largura inicial do círculo */
+        height: 40px; /* Altura inicial do círculo */
+        
+        transition: width 0.3s ease-in-out, background-color 0.3s ease-in-out;
+        
+        background-color: #9ca3af; /* Cor cinza padrão (gray-400) */
+        color: #fff;
+        border-radius: 9999px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        padding: 8px; /* p-2 */
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+        position: relative; /* Importante para o texto posicionado absolutamente */
+        overflow: hidden;
+    }
+
+    /* Estilos para o texto dentro do botão */
+    .action-button .text {
+        position: absolute;
+        left: 48px; /* Posiciona o texto à direita do ícone */
+        opacity: 0; /* Texto invisível inicialmente */
+        white-space: nowrap;
+        font-weight: bold;
+        font-size: 0.875rem; /* text-sm */
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    /* Comportamento do botão ao passar o mouse */
+    .action-button:hover {
+        width: 100px; /* Reduzi um pouco a largura para acomodar o texto mais curto */
+    }
+
+    /* Comportamento do texto ao passar o mouse */
+    .action-button:hover .text {
+        opacity: 1; /* Torna o texto visível */
+    }
+
+    /* Cores específicas para hover */
+    .action-button.back:hover {
+        background-color: #6b7280; /* gray-500 */
+    }
+
+    .action-button.edit:hover {
+        background-color: #facc15; /* yellow-400 */
+    }
+
+    .action-button.delete:hover {
+        background-color: #ef4444; /* red-500 */
+    }
+</style>
+
+<div class="container mx-auto p-4">
+    <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Detalhes do Usuário</h2>
+
+    <div class="bg-white p-8 rounded-lg shadow-lg mb-8 max-w-lg mx-auto">
+        <div class="flex flex-col items-center mb-6">
+            {% if user.profile_image %}
+                <img src="{{ user.profile_image }}" alt="Foto de Perfil" class="w-24 h-24 rounded-full object-cover mb-4 shadow-md">
+            {% else %}
+                <div class="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-bold text-4xl mb-4 shadow-md">
+                    {{ user.name[0]|upper }}
+                </div>
+            {% endif %}
+            <p class="text-2xl font-semibold text-gray-800 mb-1">{{ user.name }}</p>
+            <p class="text-gray-600 mb-2">{{ user.email }}</p>
+            <p class="text-gray-700"><strong class="font-semibold">Função:</strong> {{ user.role }}</p>
+            <p class="text-gray-700"><strong class="font-semibold">Membro desde:</strong> {{ user.created_at }}</p>
+        </div>
+
+        <div class="action-button-container">
+            {# Botão Voltar (Esquerda) #}
+            <div>
+                <a href="{{ url_for('manage_users') }}" class="action-button back">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left">
+                        <path d="m12 19-7-7 7-7"/>
+                        <path d="M19 12H5"/>
+                    </svg>
+                    <span class="text">Voltar</span>
+                </a>
+            </div>
+
+            {# Container para Editar e Excluir (Direita) #}
+            <div class="flex flex-col gap-2 items-end">
+                {# Ícone de Lápis para Editar #}
+                <a href="{{ url_for('edit_user', user_id=user.id) }}" class="action-button edit">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil">
+                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                        <path d="M15 5l4 4"/>
+                    </svg>
+                    <span class="text">Editar</span>
+                </a>
+
+                {# Ícone de Lixeira para Excluir (Agora sem a condição para fins de teste) #}
+                <form action="{{ url_for('delete_user', user_id=user.id) }}" method="post" onsubmit="return confirm('Tem certeza que deseja excluir este usuário? Esta ação é irreversível.');">
+                    <button type="submit" class="action-button delete">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2">
+                            <path d="M3 6h18"/>
+                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                            <line x1="10" x2="10" y1="11" y2="17"/>
+                            <line x1="14" x2="14" y1="11" y2="17"/>
+                        </svg>
+                        <span class="text">Excluir</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    {# Botão Voltar para Dashboard (inferior centralizado) #}
+    <div class="flex justify-center mt-8">
+        <a href="{{ url_for('dashboard') }}" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+            Voltar para Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

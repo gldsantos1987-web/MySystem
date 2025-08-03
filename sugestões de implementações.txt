@@ -1,0 +1,57 @@
+I. Funcionalidades Essenciais (Próximos Passos Lógicos)
+
+    Gerenciamento de Chamados:
+
+        Cancelamento de Chamados: Atualmente, um chamado pode ser 'Aberto', 'Em Andamento' ou 'Concluído'. Seria importante ter a opção de um administrador ou técnico cancelar um chamado, talvez com um motivo.
+
+        Edição de Chamados:
+
+            Pelo Usuário: Permitir que o usuário que abriu o chamado edite a descrição ou o local enquanto o status for 'Aberto'.
+
+            Pelo Administrador/Técnico: Permitir que o ADM/Técnico edite detalhes do chamado (título, descrição, local) se necessário.
+
+        Histórico/Comentários: Adicionar um campo ou uma tabela separada para registrar comentários e o histórico de alterações de um chamado (quem mudou o status, quem adicionou diagnóstico, etc.). Isso é crucial para rastreabilidade.
+
+    Gerenciamento de Estoque:
+
+        Remoção de Materiais: Implementar a funcionalidade de excluir um material do estoque.
+
+        Uso de Materiais nos Chamados: Quando um técnico finaliza um chamado e informa os materiais utilizados, o sistema deveria deduzir automaticamente a quantidade desses materiais do estoque.
+
+        Alertas de Estoque Baixo: Notificações ou um dashboard para administradores quando o estoque de um material atinge um nível mínimo predefinido.
+
+    Gerenciamento de Usuários:
+
+        Edição de Usuários (ADM): Permitir que o administrador edite os dados de um usuário (nome, email, função), e talvez uma opção de redefinir a senha do usuário.
+
+        Redefinição de Senha (Usuário): Implementar uma funcionalidade de "Esqueci minha senha" para que os usuários possam redefinir suas próprias senhas via email (isso é mais complexo, envolvendo envio de e-mails e tokens).
+
+II. Melhorias na Experiência do Usuário (UX)
+
+    Confirmações Visuais: Para ações críticas (ex: excluir usuário, excluir material), substituir os flash messages por modais de confirmação (pop-ups) antes de executar a ação. Isso evita exclusões acidentais.
+
+    Validação de Formulários (Frontend): Adicionar validação de entrada usando JavaScript nos formulários (ex: campos obrigatórios, formato de e-mail, quantidade numérica) para fornecer feedback instantâneo ao usuário antes mesmo de enviar os dados para o servidor.
+
+    Estados de Carregamento: Adicionar indicadores de carregamento (spinners, mensagens "Carregando...") para quando os dados dos gráficos ou tabelas estiverem sendo buscados, melhorando a percepção de desempenho.
+
+    Mensagens para Listas Vazias: Melhorar as mensagens exibidas quando uma lista (ex: "Meus Chamados Recentes" ou "Notificações") está vazia, tornando-as mais amigáveis e informativas.
+
+III. Funcionalidades Avançadas / Futuras
+
+    Relatórios Detalhados:
+
+        Relatórios de desempenho de técnicos (quantos chamados concluídos, tempo médio).
+
+        Relatórios de uso de materiais.
+
+        Gráficos mais avançados e personalizáveis.
+
+    Anexos em Chamados: Permitir que usuários e técnicos anexem imagens ou documentos aos chamados (ex: foto do problema, foto da solução).
+
+    Comunicação em Tempo Real (WebSockets): Como discutimos, para que as tabelas de chamados e os gráficos do administrador se atualizem automaticamente sem recarregar a página, seria necessário implementar WebSockets.
+
+    Autenticação Mais Robusta: Integração com sistemas de autenticação mais avançados (ex: OAuth, LDAP) se o sistema crescer para uma infraestrutura maior.
+
+    Perfis de Usuário Mais Detalhados: Adicionar mais campos aos perfis de usuário, como telefone, departamento, etc.
+
+Este é um bom roteiro para continuar evoluindo o sistema. O que você acha dessas sugestões? Há algo que você gostaria de priorizar ou discutir em mais detalhes?

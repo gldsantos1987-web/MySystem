@@ -1,0 +1,7 @@
+Sim, o ADM padrão configurado no Canvas app.py é:
+
+    Email: admin@example.com
+
+    Senha: adminpassword
+
+python app.py

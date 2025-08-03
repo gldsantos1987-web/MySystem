@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalhes do Chamado - {{ call.title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4">
+    <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Detalhes do Chamado</h2>
+
+    {# O "quadro branco" principal com largura limitada e centralizado #}
+    <div class="bg-white p-6 rounded-lg shadow-lg mb-8 max-w-4xl mx-auto">
+        {# Conteúdo principal do chamado #}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+                <p class="text-gray-700"><strong class="font-semibold">ID do Chamado:</strong> {{ call.id }}</p>
+                <p class="text-gray-700"><strong class="font-semibold">Título:</strong> {{ call.title }}</p>
+                <p class="text-gray-700"><strong class="font-semibold">Aberto Por:</strong> {{ call.user_name_opener }}</p>
+                <p class="text-gray-700"><strong class="font-semibold">Localização:</strong> {{ call.location }}</p>
+                <p class="text-gray-700"><strong class="font-semibold">Categoria:</strong> {{ call.category }}</p>
+                <p class="text-gray-700"><strong class="font-semibold">Criado Em:</strong> {{ call.created_at }}</p>
+            </div>
+            <div>
+                <p class="text-gray-700"><strong class="font-semibold">Status:</strong>
+                    <span class="px-2 py-1 rounded-full text-xs font-semibold
+                        {% if call.status == 'Aberto' %}bg-red-200 text-red-800
+                        {% elif call.status == 'Em Andamento' %}bg-yellow-200 text-yellow-800
+                        {% elif call.status == 'Concluído' %}bg-green-200 text-green-800
+                        {% elif call.status == 'Cancelado' %}bg-gray-200 text-gray-800
+                        {% elif call.status == 'Solicitação de Compras' %}bg-indigo-200 text-indigo-800
+                        {% elif call.status == 'Em Processo de Compra' %}bg-purple-200 text-purple-800
+                        {% elif call.status == 'Disponível / Aguardando Execução' %}bg-blue-200 text-blue-800
+                        {% endif %}">
+                        {{ call.status }}
+                    </span>
+                </p>
+                <p class="text-gray-700"><strong class="font-semibold">Técnico Atribuído:</strong> {{ technician_name if technician_name else 'N/A' }}</p>
+                <p class="text-gray-700"><strong class="font-semibold">Concluído Em:</strong> {{ call.finished_at if call.finished_at else 'N/A' }}</p>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <p class="text-gray-700"><strong class="font-semibold">Descrição:</strong></p>
+            <p class="bg-gray-100 p-3 rounded-lg mt-1">{{ call.description }}</p>
+        </div>
+
+        {# Exibir Anexos do Chamado #}
+        {% if attachments %}
+        <div class="mb-4">
+            <p class="text-gray-700"><strong class="font-semibold">Anexos do Chamado:</strong></p>
+            <ul class="list-disc list-inside mt-1">
+                {% for attachment in attachments %}
+                <li>
+                    <a href="{{ url_for('download_attachment', filename=attachment.filepath.split('/')[-1]) }}" class="text-blue-600 hover:underline" download>
+                        {{ attachment.filename }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {# Seção de Requisições de Material #}
+        {% if material_requests %}
+        <div class="mb-6 p-4 bg-gray-50 rounded-lg shadow-inner">
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Requisições de Material</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white border border-gray-200">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Descrição</th>
+                            <th class="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Marca</th>
+                            <th class="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Qtd.</th>
+                            <th class="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Unidade</th>
+                            <th class="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Status</th>
+                            <th class="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Link</th>
+                            <th class="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Imagem</th>
+                            <th class="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Solicitado Por</th>
+                            <th class="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Data</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in material_requests %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-2 px-4 border-b text-sm text-gray-800">{{ req.description }}</td>
+                            <td class="py-2 px-4 border-b text-sm text-gray-800">{{ req.brand if req.brand else 'N/A' }}</td>
+                            <td class="py-2 px-4 border-b text-sm text-gray-800">{{ req.quantity }}</td>
+                            <td class="py-2 px-4 border-b text-sm text-gray-800">{{ req.unit }}</td>
+                            <td class="py-2 px-4 border-b text-sm text-gray-800">
+                                <span class="px-2 py-1 rounded-full text-xs font-semibold
+                                    {% if req.status == 'Pendente' %}bg-orange-200 text-orange-800
+                                    {% elif req.status == 'Aprovada' %}bg-green-200 text-green-800
+                                    {% elif req.status == 'Rejeitada' %}bg-red-200 text-red-800
+                                    {% elif req.status == 'Em Compra' %}bg-blue-200 text-blue-800
+                                    {% elif req.status == 'Recebida' %}bg-teal-200 text-teal-800
+                                    {% endif %}">
+                                    {{ req.status }}
+                                </span>
+                            </td>
+                            <td class="py-2 px-4 border-b text-sm text-gray-800">
+                                {% if req.link %}<a href="{{ req.link }}" target="_blank" class="text-blue-600 hover:underline">Link</a>{% else %}N/A{% endif %}
+                            </td>
+                            <td class="py-2 px-4 border-b text-sm text-gray-800">
+                                {% if req.image_path %}
+                                <a href="{{ url_for('download_material_image', filename=req.image_path.split('/')[-1]) }}" target="_blank" class="text-blue-600 hover:underline">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-image">
+                                        <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                                        <circle cx="9" cy="9" r="2"/>
+                                        <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                                    </svg>
+                                </a>
+                                {% else %}N/A{% endif %}
+                            </td>
+                            <td class="py-2 px-4 border-b text-sm text-gray-800">{{ req.requested_by_name }}</td>
+                            <td class="py-2 px-4 border-b text-sm text-gray-800">{{ req.requested_at }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+
+        {# Atribuir Técnico (APENAS PARA ADMIN) #}
+        {% if user_role == 'ADMIN' and call.status in ['Aberto', 'Em Andamento'] %}
+            <div class="mb-6 p-4 bg-gray-50 rounded-lg shadow-inner">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">Atribuir Técnico</h3>
+                <form action="{{ url_for('assign_technician', call_id=call.id) }}" method="post" class="flex flex-col sm:flex-row gap-4 items-center">
+                    <select name="technician_id" class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow">
+                        <option value="">-- Selecione um técnico --</option>
+                        {% for tech in available_technicians %}
+                            <option value="{{ tech.id }}" {% if call.technician_id == tech.id %}selected{% endif %}>{{ tech.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 w-full sm:w-auto">
+                        Atribuir Técnico
+                    </button>
+                </form>
+            </div>
+        {% endif %}
+
+        {# Seção de Atendimento do Chamado (APENAS PARA TECNICO) #}
+        {% if user_role == 'TECNICO' %}
+            <div class="mb-6 p-4 bg-gray-50 rounded-lg shadow-inner">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">Atendimento do Chamado</h3>
+                <form action="{{ url_for('attend_call', call_id=call.id) }}" method="post" enctype="multipart/form-data">
+                    <div class="mb-4">
+                        <label for="diagnosis" class="block text-gray-700 text-sm font-bold mb-2">Diagnóstico:</label>
+                        <textarea name="diagnosis" id="diagnosis" rows="4" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Descreva o diagnóstico do problema..." {% if call.status in ['Solicitação de Compras', 'Em Processo de Compra'] %}readonly{% endif %} required>{{ call.diagnosis if call.diagnosis }}</textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label for="materials_used" class="block text-gray-700 text-sm font-bold mb-2">Materiais Utilizados (JSON):</label>
+                        <textarea name="materials_used" id="materials_used" rows="3" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder='Ex: [{"name": "Cabo de Rede", "quantity": 1, "unit": "metros"}]' {% if call.status in ['Solicitação de Compras', 'Em Processo de Compra'] %}readonly{% endif %}>{{ call.materials if call.materials }}</textarea>
+                        <p class="text-xs text-gray-500 mt-1">Formato JSON esperado: `[{"name": "Nome do Material", "quantity": Quantidade, "unit": "Unidade"}]`</p>
+                    </div>
+                    <div class="mb-4">
+                        <label for="conclusion" class="block text-gray-700 text-sm font-bold mb-2">Conclusão:</label>
+                        <textarea name="conclusion" id="conclusion" rows="4" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Descreva a conclusão do atendimento..." {% if call.status in ['Solicitação de Compras', 'Em Processo de Compra'] %}readonly{% endif %} required>{{ call.conclusion if call.conclusion }}</textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label for="attachments" class="block w-full text-sm text-gray-700 font-bold mb-2">Adicionar Anexos:</label>
+                        <input type="file" name="attachments" id="attachments" multiple class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" {% if call.status in ['Solicitação de Compras', 'Em Processo de Compra'] %}disabled{% endif %}>
+                        <p class="text-xs text-gray-500 mt-1">Tipos permitidos: PNG, JPG, JPEG, GIF, PDF, DOC, DOCX, TXT.</p>
+                    </div>
+                    <div class="flex justify-between items-center mt-4">
+                        {# Botão Requisitar Material (APENAS PARA TECNICO, se o chamado não estiver em processo de compra ou finalizado) #}
+                        {% if call.status in ['Em Andamento', 'Disponível / Aguardando Execução'] %}
+                            <a href="{{ url_for('request_material', call_id=call.id) }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+                                Requisitar Material
+                            </a>
+                        {% else %}
+                            <div></div> {# Espaçador para manter o justify-between #}
+                        {% endif %}
+
+                        {# Botão Finalizar Chamado (APENAS PARA TECNICO, se o chamado permitir finalização) #}
+                        {% if call.status in ['Em Andamento', 'Disponível / Aguardando Execução'] %}
+                            <button type="submit" name="action" value="finish_call" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+                                Finalizar Chamado
+                            </button>
+                        {% else %}
+                            <div></div> {# Espaçador para manter o justify-between #}
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        {% endif %}
+
+        {# Exibir Diagnóstico, Materiais e Conclusão se o chamado estiver Concluído ou Cancelado #}
+        {% if call.status in ['Concluído', 'Cancelado'] %}
+            {% if call.diagnosis %}
+            <div class="mb-4">
+                <p class="text-gray-700"><strong class="font-semibold">Diagnóstico:</strong></p>
+                <p class="bg-gray-100 p-3 rounded-lg mt-1">{{ call.diagnosis }}</p>
+            </div>
+            {% endif %}
+
+            {% if call.materials %}
+            <div class="mb-4">
+                <p class="text-gray-700"><strong class="font-semibold">Materiais Utilizados:</strong></p>
+                <ul class="list-disc list-inside bg-gray-100 p-3 rounded-lg mt-1">
+                    {% set materials_list = json_loads(call.materials) %}
+                    {% for material in materials_list %}
+                        <li>{{ material.name }} - {{ material.quantity }} {{ material.unit }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if call.conclusion %}
+            <div class="mb-4">
+                <p class="text-gray-700"><strong class="font-semibold">Conclusão:</strong></p>
+                <p class="bg-gray-100 p-3 rounded-lg mt-1">{{ call.conclusion }}</p>
+            </div>
+            {% endif %}
+        {% endif %}
+
+        {# Container para os botões "Voltar" e "Cancelar Chamado" alinhados #}
+        <div class="flex justify-between items-center mt-6">
+            {# Botão Voltar para Admin Calls (esquerda) #}
+            <a href="{{ url_for('admin_calls') }}" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+                Voltar
+            </a>
+
+            {# Botão Cancelar Chamado (direita) - apenas para ADMIN e TECNICO, se não estiver concluído/cancelado #}
+            {% if user_role in ['ADMIN', 'TECNICO'] and call.status not in ['Concluído', 'Cancelado'] %}
+                <form action="{{ url_for('cancel_call', call_id=call.id) }}" method="post">
+                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+                        Cancelar Chamado
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Botão Voltar para Dashboard (inferior centralizado) #}
+    <div class="flex justify-center mt-8">
+        <a href="{{ url_for('dashboard') }}" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+            Voltar para Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

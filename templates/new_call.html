@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Abrir Novo Chamado{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4">
+    <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Abrir Novo Chamado</h2>
+
+    <div class="bg-white p-6 rounded-lg shadow-lg mb-8 max-w-2xl mx-auto">
+        <form action="{{ url_for('new_call') }}" method="post" enctype="multipart/form-data">
+            <div class="mb-4">
+                <label for="title" class="block text-gray-700 text-sm font-bold mb-2">Título do Chamado:</label>
+                <input type="text" name="title" id="title" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Ex: Problema com vazamento no banheiro do 3º andar" required>
+            </div>
+            <div class="mb-4">
+                <label for="description" class="block text-gray-700 text-sm font-bold mb-2">Descrição Detalhada:</label>
+                <textarea name="description" id="description" rows="5" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Descreva o problema com o máximo de detalhes possível." required></textarea>
+            </div>
+            <div class="mb-4">
+                <label for="location" class="block text-gray-700 text-sm font-bold mb-2">Localização:</label>
+                <input type="text" name="location" id="location" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Ex: Sala 101, Prédio B" required>
+            </div>
+            <div class="mb-4">
+                <label for="category" class="block text-gray-700 text-sm font-bold mb-2">Categoria:</label>
+                <select name="category" id="category" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                    <option value="">-- Selecione uma Categoria --</option>
+                    <option value="Eletrica">Elétrica</option>
+                    <option value="Hidraulica">Hidráulica</option>
+                    <option value="Alvenaria">Alvenaria</option>
+                    <option value="Pintura">Pintura</option>
+                    <option value="Marcenaria">Marcenaria</option>
+                    <option value="Refrigeracao">Refrigeração</option>
+                    <option value="Limpeza">Limpeza</option>
+                    <option value="Jardinagem">Jardinagem</option>
+                    <option value="Outros">Outros</option>
+                </select>
+            </div>
+            <div class="mb-6">
+                <label for="attachments" class="block text-gray-700 text-sm font-bold mb-2">Anexar Arquivos (Opcional):</label>
+                <input type="file" name="attachments" id="attachments" multiple class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                <p class="text-xs text-gray-500 mt-1">PNG, JPG, JPEG, GIF, PDF, DOC, DOCX, TXT.</p>
+            </div>
+            <div class="flex items-center justify-between">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+                    Abrir Chamado
+                </button>
+                {# Botão Cancelar condicional #}
+                {% if session.user_role == 'ADMIN' %}
+                    <a href="{{ url_for('admin_calls') }}" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+                        Cancelar
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('dashboard') }}" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+                        Cancelar
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

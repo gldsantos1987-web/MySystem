@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}Gerenciar Usuários{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4">
+    <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Gerenciar Usuários</h2>
+
+    <div class="bg-white p-6 rounded-lg shadow-lg mb-8">
+        {# Layout: Filtro (esquerda) | Botão Registrar + Busca (direita) #}
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            {# Filtro por Função (Esquerda) #}
+            <div class="flex items-center gap-2 w-full md:w-auto">
+                <label for="role_filter" class="text-gray-700 font-semibold">Filtrar:</label>
+                <select id="role_filter" name="role_filter" class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow">
+                    <option value="">Todos</option>
+                    <option value="ADMIN" {% if role_filter == 'ADMIN' %}selected{% endif %}>Admin</option>
+                    <option value="TECNICO" {% if role_filter == 'TECNICO' %}selected{% endif %}>Técnico</option>
+                    <option value="USUARIO" {% if role_filter == 'USUARIO' %}selected{% endif %}>Usuário</option>
+                </select>
+            </div>
+
+            {# Botão Registrar Novo Usuário e Sistema de Busca (Direita) #}
+            <div class="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+                <a href="{{ url_for('register_user') }}" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 text-center w-full sm:w-auto">
+                    Registrar Novo Usuário
+                </a>
+                <form id="search-form" action="{{ url_for('manage_users') }}" method="get" class="flex gap-2 w-full sm:w-auto">
+                    <input type="text" name="search" placeholder="Buscar por nome ou email..."
+                           class="flex-grow p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           value="{{ search_query if search_query }}">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+                        Buscar
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        {% if users %}
+        <div class="overflow-x-auto rounded-lg shadow-md">
+            <table class="min-w-full bg-white">
+                <thead class="bg-gray-200 text-gray-700 uppercase text-sm leading-normal">
+                    <tr>
+                        <th class="py-3 px-6 text-left">ID</th>
+                        <th class="py-3 px-6 text-left">Foto</th>
+                        <th class="py-3 px-6 text-left">Nome</th>
+                        <th class="py-3 px-6 text-left">Email</th>
+                        <th class="py-3 px-6 text-left">Função</th>
+                        <th class="py-3 px-6 text-left">Criado Em</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-600 text-sm font-light">
+                    {% for user in users %}
+                    <tr class="border-b border-gray-200 hover:bg-gray-100 cursor-pointer"
+                        onclick="window.location.href='{{ url_for('user_details', user_id=user.id) }}'">
+                        <td class="py-3 px-6 text-left whitespace-nowrap">{{ user.id }}</td>
+                        <td class="py-3 px-6 text-left">
+                            {% if user.profile_image %}
+                                <img src="{{ user.profile_image }}" alt="Foto" class="w-8 h-8 rounded-full object-cover">
+                            {% else %}
+                                <div class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold text-xs">
+                                    {{ user.name[0]|upper }}
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td class="py-3 px-6 text-left">{{ user.name }}</td>
+                        <td class="py-3 px-6 text-left">{{ user.email }}</td>
+                        <td class="py-3 px-6 text-left">{{ user.role }}</td>
+                        <td class="py-3 px-6 text-left">{{ user.created_at }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {# Paginação #}
+        <div class="flex justify-center mt-6 space-x-2">
+            {% if page > 1 %}
+                <a href="{{ url_for('manage_users', page=page-1, search=search_query, role_filter=role_filter) }}" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition duration-200">Anterior</a>
+            {% endif %}
+            {% for p in range(1, total_pages + 1) %}
+                <a href="{{ url_for('manage_users', page=p, search=search_query, role_filter=role_filter) }}" class="px-4 py-2 rounded-lg {% if p == page %}bg-blue-600 text-white{% else %}bg-gray-300 text-gray-800 hover:bg-gray-400{% endif %} transition duration-200">{{ p }}</a>
+            {% endfor %}
+            {% if page < total_pages %}
+                <a href="{{ url_for('manage_users', page=page+1, search=search_query, role_filter=role_filter) }}" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition duration-300">Próxima</a>
+            {% endif %}
+        </div>
+        {% else %}
+        <p class="text-center text-gray-500 mt-8">Nenhum usuário encontrado. <a href="{{ url_for('register_user') }}" class="text-blue-600 hover:underline">Que tal registrar um novo?</a></p>
+        {% endif %}
+    </div>
+
+    {# Botão Voltar para Dashboard #}
+    <div class="flex justify-center mt-8">
+        <a href="{{ url_for('dashboard') }}" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+            Voltar para Dashboard
+        </a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const roleFilterSelect = document.getElementById('role_filter');
+        const searchInput = document.querySelector('#search-form input[name="search"]');
+
+        roleFilterSelect.addEventListener('change', function() {
+            // Obtém os valores atuais do filtro e da busca
+            const currentRoleFilter = this.value;
+            const currentSearchQuery = searchInput.value;
+            
+            // Constrói a nova URL com base nos valores
+            const url = new URL(window.location.href);
+            url.searchParams.set('role_filter', currentRoleFilter);
+            url.searchParams.set('search', currentSearchQuery); // Mantém a busca atual
+            url.searchParams.set('page', 1); // Volta para a primeira página ao aplicar novo filtro
+
+            window.location.href = url.toString(); // Redireciona para a nova URL
+        });
+    });
+</script>
+{% endblock %}

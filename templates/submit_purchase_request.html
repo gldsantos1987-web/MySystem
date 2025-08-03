@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Nova Requisição de Compra{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4">
+    <div class="max-w-lg mx-auto bg-white p-8 rounded-lg shadow-lg">
+        <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Nova Requisição de Compra</h2>
+        <p class="text-center text-gray-600 mb-8">
+            Preencha os campos abaixo para solicitar um novo item.
+        </p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="p-4 mb-4 text-sm rounded-lg 
+                        {% if category == 'success' %}text-green-700 bg-green-100{% endif %}
+                        {% if category == 'error' %}text-red-700 bg-red-100{% endif %}
+                        {% if category == 'info' %}text-blue-700 bg-blue-100{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('submit_purchase_request') }}">
+            <div class="mb-4">
+                <label for="item_name" class="block text-gray-700 text-sm font-bold mb-2">Nome do Item:</label>
+                <input type="text" id="item_name" name="item_name" required
+                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            
+            <div class="mb-6">
+                <label for="quantity" class="block text-gray-700 text-sm font-bold mb-2">Quantidade:</label>
+                <input type="number" id="quantity" name="quantity" required min="1"
+                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+
+            <div class="flex items-center justify-between">
+                <button type="submit" 
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Enviar Requisição
+                </button>
+                <a href="{{ url_for('dashboard') }}" class="inline-block align-baseline font-bold text-sm text-gray-500 hover:text-gray-800">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
