@@ -17,12 +17,12 @@
                         <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700">Status</th>
                         <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700">Local</th>
                         <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700">Criado Em</th>
-                        <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for call in all_calls %}
-                    <tr class="border-b border-gray-200 hover:bg-gray-50">
+                    <tr class="border-b border-gray-200 hover:bg-gray-50 cursor-pointer"
+                        onclick="window.location.href='{{ url_for('call_details', call_id=call.id) }}'">
                         <td class="py-3 px-4 text-sm text-gray-800">{{ call.id }}</td>
                         <td class="py-3 px-4 text-sm text-gray-800">{{ call.title }}</td>
                         <td class="py-3 px-4 text-sm text-gray-800">
@@ -37,11 +37,6 @@
                         </td>
                         <td class="py-3 px-4 text-sm text-gray-800">{{ call.location }}</td>
                         <td class="py-3 px-4 text-sm text-gray-800">{{ call.created_at }}</td>
-                        <td class="py-3 px-4 text-sm text-gray-800">
-                            <a href="{{ url_for('call_details', call_id=call.id) }}" class="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-md text-xs transition duration-300">
-                                Ver Detalhes
-                            </a>
-                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -73,6 +68,13 @@
             </a>
         </div>
         {% endif %}
+    </div>
+
+    <!-- Botão Voltar para Dashboard abaixo do painel centralizado -->
+    <div class="flex justify-center mt-6">
+        <a href="{{ url_for('dashboard') }}" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+            Voltar para Dashboard
+        </a>
     </div>
 </div>
 {% endblock %}

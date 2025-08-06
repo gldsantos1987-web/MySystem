@@ -44,18 +44,19 @@
                 <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
                     Abrir Chamado
                 </button>
-                {# Botão Cancelar condicional #}
-                {% if session.user_role == 'ADMIN' %}
-                    <a href="{{ url_for('admin_calls') }}" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
-                        Cancelar
-                    </a>
-                {% else %}
-                    <a href="{{ url_for('dashboard') }}" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
-                        Cancelar
-                    </a>
-                {% endif %}
+                <!-- Botão Cancelar neutro sempre aparece, leva ao dashboard -->
+                <a href="{{ url_for('dashboard') }}" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+                    Cancelar
+                </a>
             </div>
         </form>
+    </div>
+
+    <!-- Botão Voltar para Dashboard abaixo do painel, centralizado -->
+    <div class="flex justify-center mt-6">
+        <a href="{{ url_for('dashboard') }}" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+            Voltar para Dashboard
+        </a>
     </div>
 </div>
 {% endblock %}
